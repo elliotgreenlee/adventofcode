@@ -28,6 +28,7 @@ previous Elf's inventory (if any) by a blank line.
 For example, suppose the Elves finish writing their items' Calories and
 end up with the following list:
 
+```
 1000
 2000
 3000
@@ -42,6 +43,7 @@ end up with the following list:
 9000
 
 10000
+```
 
 This list represents the Calories of the food carried by five Elves:
 
