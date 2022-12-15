@@ -1,3 +1,4 @@
 .gitignore
 venv/*
 .idea
+adventofcode2022/.pytest_cache
