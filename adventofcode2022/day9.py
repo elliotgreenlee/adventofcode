@@ -5,10 +5,14 @@ class Position:
 
 
 class RopeGrid:
-    def __init__(self):
+    def __init__(self, rope_length):
+        self.rope_length = rope_length
+
         self.visited_positions = set()
-        self.head = Position(0, 0)
-        self.tail = Position(0, 0)
+
+        self.rope = [Position(0, 0) for i in range(self.rope_length)]
+        self.HEAD_POSITION = 0
+        self.TAIL_POSITION = self.rope_length - 1
 
     def simulate(self, direction, steps):
         if direction == 'U':
@@ -28,64 +32,75 @@ class RopeGrid:
             for _ in range(steps):
                 head_movement(self, steps)
                 self.fix_tail()
-                self.visited_positions.add((self.tail.x, self.tail.y))  # Set understands tuples but not Positions
+                # Add tail position to visited positions set. Sets understand tuples but not Positions
+                self.visited_positions.add((self.rope[self.rope_length-1].x, self.rope[self.rope_length-1].y))
         return step
 
     @decorator
     def step_up(self, steps):
-        self.head.y += 1
+        self.rope[self.HEAD_POSITION].y += 1
 
     @decorator
     def step_down(self, steps):
-        self.head.y -= 1
+        self.rope[self.HEAD_POSITION].y -= 1
 
     @decorator
     def step_left(self, steps):
-        self.head.x -= 1
+        self.rope[self.HEAD_POSITION].x -= 1
 
     @decorator
     def step_right(self, steps):
-        self.head.x += 1
+        self.rope[self.HEAD_POSITION].x += 1
 
     def fix_tail(self):
-        # If the head is ever two steps up, down, left, or right from the tail
-        if abs(self.head.y - self.tail.y) > 1 and self.head.y > self.tail.y:  # two steps up
-            # If the head is left of tail
-            if self.head.x < self.tail.x:
-                self.tail.x -= 1  # Move tail left
-            # If the head is right of tail
-            elif self.tail.x < self.head.x:
-                self.tail.x += 1  # Move tail right
-            self.tail.y += 1  # Move tail up
-        elif abs(self.head.y - self.tail.y) > 1 and self.head.y < self.tail.y:  # two steps down
-            # If the head is left of tail
-            if self.head.x < self.tail.x:
-                self.tail.x -= 1  # Move tail left
-            # If the head is right of tail
-            elif self.tail.x < self.head.x:
-                self.tail.x += 1  # Move tail right
-            self.tail.y -= 1  # Move tail down
-        elif abs(self.head.x - self.tail.x) > 1 and self.head.x > self.tail.x:  # two steps right
-            # If the head is up of tail
-            if self.tail.y < self.head.y:
-                self.tail.y += 1  # Move tail up
-            # If the head is down of tail
-            elif self.head.y < self.tail.y:
-                self.tail.y -= 1  # Move tail down
-            self.tail.x += 1  # Move tail right
-        elif abs(self.head.x - self.tail.x) > 1 and self.head.x < self.tail.x:  # two steps left
-            # If the head is up of tail
-            if self.tail.y < self.head.y:
-                self.tail.y += 1  # Move tail up
-            # If the head is down of tail
-            elif self.head.y < self.tail.y:
-                self.tail.y -= 1  # Move tail down
-            self.tail.x -= 1  # Move tail left
+        # Iterate over each rope duo
+        front = self.HEAD_POSITION
+        for back in range(1, self.rope_length):
+            # If the front is ever two steps up, down, left, or right from the back
+            if abs(self.rope[front].y - self.rope[back].y) > 1\
+                    and self.rope[front].y > self.rope[back].y:  # two steps up
+                # If the front is left of back
+                if self.rope[front].x < self.rope[back].x:
+                    self.rope[back].x -= 1  # Move back left
+                # If the front is right of back
+                elif self.rope[back].x < self.rope[front].x:
+                    self.rope[back].x += 1  # Move back right
+                self.rope[back].y += 1  # Move back up
+            elif abs(self.rope[front].y - self.rope[back].y) > 1\
+                    and self.rope[front].y < self.rope[back].y:  # two steps down
+                # If the front is left of tail
+                if self.rope[front].x < self.rope[back].x:
+                    self.rope[back].x -= 1  # Move back left
+                # If the front is right of tail
+                elif self.rope[back].x < self.rope[front].x:
+                    self.rope[back].x += 1  # Move back right
+                self.rope[back].y -= 1  # Move back down
+            elif abs(self.rope[front].x - self.rope[back].x) > 1\
+                    and self.rope[front].x > self.rope[back].x:  # two steps right
+                # If the front is up of tail
+                if self.rope[back].y < self.rope[front].y:
+                    self.rope[back].y += 1  # Move back up
+                # If the front is down of tail
+                elif self.rope[front].y < self.rope[back].y:
+                    self.rope[back].y -= 1  # Move back down
+                self.rope[back].x += 1  # Move back right
+            elif abs(self.rope[front].x - self.rope[back].x) > 1\
+                    and self.rope[front].x < self.rope[back].x:  # two steps left
+                # If the front is up of tail
+                if self.rope[back].y < self.rope[front].y:
+                    self.rope[back].y += 1  # Move back up
+                # If the front is down of tail
+                elif self.rope[front].y < self.rope[back].y:
+                    self.rope[back].y -= 1  # Move back down
+                self.rope[back].x -= 1  # Move back left
+
+            # Move down the rope
+            front = back
 
 
 def part1():
     with open("day9.input") as f:
-        rope_grid = RopeGrid()
+        rope_grid = RopeGrid(2)
         for line in f:
             line = line.rstrip().split(' ')
             direction = line[0]
@@ -96,9 +111,15 @@ def part1():
 
 
 def part2():
-    with open("day9.test") as f:
+    with open("day9.input") as f:
+        rope_grid = RopeGrid(10)
         for line in f:
-            pass
+            line = line.rstrip().split(' ')
+            direction = line[0]
+            steps = int(line[1])
+            rope_grid.simulate(direction, steps)
+
+        return len(rope_grid.visited_positions)
 
 
 def main():
